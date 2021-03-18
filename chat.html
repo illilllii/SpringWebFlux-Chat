@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chat</title>
+    <style>
+      #name {
+        width: 5%;
+      }
+      #message {
+        width: 35%;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <textarea id="chat" rows="30%" cols="80%" readonly></textarea>
+      <br />
+      <input type="text" id="username" />
+      <input type="text" id="message" />
+      <button onclick="send()">chat</button>
+    </div>
+    <script>
+      function send() {
+        let username = document.querySelector("#username").value;
+        let message = document.querySelector("#message").value;
+        if(username == "") {
+            alert("이름을 입력해 주세요");
+            return;
+        }
+        if(message == "") {
+            alert("전송할 메시지가 없습니다. 메시지를 입력해 주세요");
+            return;
+        }
+        
+        fetch("http://localhost:8080/send/" + username + "/" + message)
+          .then((res) => res.text())
+          .then((res) => {         
+             document.querySelector("#message").value = "";
+          });
+      }
+      const eventSource = new EventSource("http://localhost:8080/sse");
+      eventSource.onmessage = (event) => {
+        document.querySelector("#chat").value += event.data + "\n";
+      };
+      eventSource.onerror = (error) => {
+        eventSource.close();
+      };
+    </script>
+  </body>
+</html>
